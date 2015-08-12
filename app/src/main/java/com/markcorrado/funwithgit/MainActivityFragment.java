@@ -30,4 +30,11 @@ public class MainActivityFragment extends ListFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, stringArrayList);
         setListAdapter(adapter);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        GitRestClient restClient = GitRestClient.getInstance(getString(R.string.server));
+
+    }
 }
