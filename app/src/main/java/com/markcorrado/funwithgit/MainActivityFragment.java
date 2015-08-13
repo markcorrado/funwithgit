@@ -30,6 +30,7 @@ import java.util.ArrayList;
 public class MainActivityFragment extends ListFragment {
 
     ArrayList<Commit> mCommitArrayList;
+    GitRestClient mRestClient;
 
     public MainActivityFragment() {
     }
@@ -42,9 +43,13 @@ public class MainActivityFragment extends ListFragment {
     @Override
     public void onResume() {
         super.onResume();
-        GitRestClient restClient = GitRestClient.getInstance(getString(R.string.server));
-        restClient.setUserAgent("FunWithGit");
-        restClient.get("markcorrado/funwithgit/commits", new JsonHttpResponseHandler() {
+        getCommits();
+    }
+
+    private void getCommits() {
+        mRestClient = GitRestClient.getInstance();
+        mRestClient.setUserAgent("FunWithGit");
+        mRestClient.getCommits(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray responseArray) {
                 super.onSuccess(statusCode, headers, responseArray);
@@ -85,11 +90,13 @@ public class MainActivityFragment extends ListFragment {
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 super.onFailure(statusCode, headers, responseString, throwable);
+                System.out.println(responseString);
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
+                System.out.println(throwable.getLocalizedMessage());
             }
         });
     }

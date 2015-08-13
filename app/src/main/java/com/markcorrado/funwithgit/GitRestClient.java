@@ -11,14 +11,14 @@ import com.loopj.android.http.RequestParams;
  */
 public class GitRestClient extends AsyncHttpClient {
 
-    private static  String mBaseApiUrl;
+    private static final String BASE_URL = "https://api.github.com/repos/markcorrado/funwithgit/";
+    private static final String COMMITS = "commits";
     private static GitRestClient mClient = null;
 
-    public static GitRestClient getInstance(String baseApiUrl) {
+    public static GitRestClient getInstance() {
         if(mClient == null) {
             mClient = new GitRestClient();
         }
-        mBaseApiUrl = baseApiUrl;
         return mClient;
     }
 
@@ -26,7 +26,11 @@ public class GitRestClient extends AsyncHttpClient {
         super.get(getAbsoluteUrl(url), responseHandler);
     }
 
+    public void getCommits(AsyncHttpResponseHandler responseHandler) {
+        mClient.get(COMMITS, responseHandler);
+    }
+
     private static String getAbsoluteUrl(String relativeUrl) {
-        return mBaseApiUrl + relativeUrl;
+        return BASE_URL + relativeUrl;
     }
 }

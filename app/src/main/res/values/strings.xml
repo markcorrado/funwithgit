@@ -2,5 +2,4 @@
     <string name="app_name">FunWithGit</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="server">https://api.github.com/repos/</string>
 </resources>
