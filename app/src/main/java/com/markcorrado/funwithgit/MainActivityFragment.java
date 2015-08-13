@@ -12,6 +12,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
@@ -45,28 +47,32 @@ public class MainActivityFragment extends ListFragment {
         super.onResume();
         GitRestClient restClient = GitRestClient.getInstance(getString(R.string.server));
         restClient.setUserAgent("FunWithGit");
-        restClient.get("hudl/hudlbot/commits", new JsonHttpResponseHandler() {
+        restClient.get("markcorrado/funwithgit/commits", new JsonHttpResponseHandler() {
 
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                super.onSuccess(statusCode, headers, response);
-//                foodTruckArrayList = new ArrayList<FoodTruck>();
-//                for (int i=0; i < response.length(); i++)
-//                {
-//                    try {
-//                        JSONObject truckObject = response.getJSONObject(i);
-//                        // Pulling items from the array
-//                        String name = truckObject.getString("title");
-//                        String copy = truckObject.getString("text");
-//                        String latitude = truckObject.getString("latitude");
-//                        String longitude = truckObject.getString("longitude");
-//                        foodTruckArrayList.add(new FoodTruck(name, Double.parseDouble(latitude), Double.parseDouble(longitude), copy));
-//                    } catch (JSONException e) {
-//                        Log.e(TAG, "JSON Exception" + e);
-//                    }
-//                }
-//
-//                loadMap();
+            public void onSuccess(int statusCode, Header[] headers, JSONArray responseArray) {
+                super.onSuccess(statusCode, headers, responseArray);
+                ArrayList<Commit>commitArrayList = new ArrayList<Commit>();
+                if (responseArray.length() == 0) {
+                    Toast.makeText(getActivity(), "No Equipment", Toast.LENGTH_SHORT).show();
+                } else {
+                    for (int i = 0; i < responseArray.length(); i++) {
+                        try {
+                            JSONObject fullJson = responseArray.getJSONObject(i);
+                            GsonBuilder gsonBuilder = new GsonBuilder();
+                            Gson gson = gsonBuilder.create();
+//                            Commit commit = gson.fromJson(commitJson.toString(), Commit.class);
+                            if (!fullJson.isNull("commit")) {
+                                JSONObject commitJsonObject = fullJson.getJSONObject("commit");
+                                Commit commit = gson.fromJson(commitJsonObject.toString(), Commit.class);
+                                commitArrayList.add(commit);
+                            }
+                        } catch (JSONException e) {
+                            Log.e("TAG", "JSON parsing error: " + e);
+                        }
+                    }
+                }
+                Toast.makeText(getActivity(), "Success", Toast.LENGTH_SHORT).show();
             }
 
             @Override
