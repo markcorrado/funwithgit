@@ -12,5 +12,21 @@ public class Commit {
         this.message = message;
     }
 
+    public String getSha() {
+        return sha;
+    }
+
+    public void setSha(String sha) {
+        this.sha = sha;
+    }
+
+    public String toString()
+    {
+        return message;
+    }
+
     private String message;
+    private String sha;
+
+
 }

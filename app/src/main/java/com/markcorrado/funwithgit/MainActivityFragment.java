@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -28,18 +29,14 @@ import java.util.ArrayList;
  */
 public class MainActivityFragment extends ListFragment {
 
+    ArrayList<Commit> mCommitArrayList;
+
     public MainActivityFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ArrayList<String> stringArrayList = new ArrayList<>();
-        stringArrayList.add("One");
-        stringArrayList.add("Two");
-        stringArrayList.add("Three");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, stringArrayList);
-        setListAdapter(adapter);
     }
 
     @Override
@@ -48,30 +45,33 @@ public class MainActivityFragment extends ListFragment {
         GitRestClient restClient = GitRestClient.getInstance(getString(R.string.server));
         restClient.setUserAgent("FunWithGit");
         restClient.get("markcorrado/funwithgit/commits", new JsonHttpResponseHandler() {
-
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray responseArray) {
                 super.onSuccess(statusCode, headers, responseArray);
-                ArrayList<Commit>commitArrayList = new ArrayList<Commit>();
+                mCommitArrayList = new ArrayList<Commit>();
                 if (responseArray.length() == 0) {
-                    Toast.makeText(getActivity(), "No Equipment", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "No Commits", Toast.LENGTH_SHORT).show();
                 } else {
                     for (int i = 0; i < responseArray.length(); i++) {
                         try {
                             JSONObject fullJson = responseArray.getJSONObject(i);
                             GsonBuilder gsonBuilder = new GsonBuilder();
                             Gson gson = gsonBuilder.create();
-//                            Commit commit = gson.fromJson(commitJson.toString(), Commit.class);
                             if (!fullJson.isNull("commit")) {
                                 JSONObject commitJsonObject = fullJson.getJSONObject("commit");
                                 Commit commit = gson.fromJson(commitJsonObject.toString(), Commit.class);
-                                commitArrayList.add(commit);
+                                if (!fullJson.isNull("sha")) {
+                                    String sha = fullJson.getString("sha");
+                                    commit.setSha(sha);
+                                }
+                                mCommitArrayList.add(commit);
                             }
                         } catch (JSONException e) {
                             Log.e("TAG", "JSON parsing error: " + e);
                         }
                     }
                 }
+                setupAdapter();
                 Toast.makeText(getActivity(), "Success", Toast.LENGTH_SHORT).show();
             }
 
@@ -92,5 +92,17 @@ public class MainActivityFragment extends ListFragment {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
+    }
+
+    private void setupAdapter() {
+        ArrayAdapter<Commit> adapter = new ArrayAdapter<Commit>(getActivity(), android.R.layout.simple_list_item_1, mCommitArrayList);
+        setListAdapter(adapter);
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Commit commit = (Commit) l.getItemAtPosition(position);
+
     }
 }
