@@ -13,7 +13,6 @@ public class GitRestClient extends AsyncHttpClient {
 
     private static  String mBaseApiUrl;
     private static GitRestClient mClient = null;
-    private static Context mContext;
 
     public static GitRestClient getInstance(String baseApiUrl) {
         if(mClient == null) {
@@ -23,12 +22,8 @@ public class GitRestClient extends AsyncHttpClient {
         return mClient;
     }
 
-    public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        super.get(getAbsoluteUrl(url), params, responseHandler);
-    }
-
-    public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        super.post(getAbsoluteUrl(url), params, responseHandler);
+    public void get(String url, AsyncHttpResponseHandler responseHandler) {
+        super.get(getAbsoluteUrl(url), responseHandler);
     }
 
     private static String getAbsoluteUrl(String relativeUrl) {
