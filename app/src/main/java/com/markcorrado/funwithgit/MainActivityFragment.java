@@ -1,5 +1,6 @@
 package com.markcorrado.funwithgit;
 
+import android.app.Activity;
 import android.app.ListFragment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
@@ -23,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -31,6 +34,7 @@ public class MainActivityFragment extends ListFragment {
 
     ArrayList<Commit> mCommitArrayList;
     GitRestClient mRestClient;
+    private OnFragmentInteractionListener mListener;
 
     public MainActivityFragment() {
     }
@@ -77,7 +81,50 @@ public class MainActivityFragment extends ListFragment {
                     }
                 }
                 setupAdapter();
-                Toast.makeText(getActivity(), "Success", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Toast.makeText(getActivity(), "Error loading git commits!", Toast.LENGTH_LONG).show();
+                System.out.println(errorResponse);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+                System.out.println(responseString);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                System.out.println(throwable.getLocalizedMessage());
+            }
+        });
+    }
+
+    private void getFiles(String sha) {
+        mRestClient = GitRestClient.getInstance();
+        mRestClient.setUserAgent("FunWithGit");
+        mRestClient.getFiles(sha, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                ArrayList<CommitFile> commitFileArrayList = new ArrayList<>();
+                try {
+                    GsonBuilder gsonBuilder = new GsonBuilder();
+                    Gson gson = gsonBuilder.create();
+                    if (!response.isNull("files")) {
+                        JSONArray filesJsonArray = response.getJSONArray("files");
+                        commitFileArrayList = gson.fromJson(filesJsonArray.toString(), new TypeToken<List<CommitFile>>() {
+                        }.getType());
+                    }
+                } catch (JSONException e) {
+                    Log.e("TAG", "JSON parsing error: " + e);
+                }
+                showFilesDetail(commitFileArrayList);
+                Toast.makeText(getActivity(), "Success!", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -110,6 +157,43 @@ public class MainActivityFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         Commit commit = (Commit) l.getItemAtPosition(position);
+        getFiles(commit.getSha());
+    }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    public void showFilesDetail(ArrayList<CommitFile> commitFiles) {
+        if (mListener != null) {
+            mListener.showFilesDetail(commitFiles);
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        public void showFilesDetail(ArrayList<CommitFile> commitFiles);
     }
 }

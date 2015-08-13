@@ -30,6 +30,10 @@ public class GitRestClient extends AsyncHttpClient {
         mClient.get(COMMITS, responseHandler);
     }
 
+    public void getFiles(String sha, AsyncHttpResponseHandler responseHandler) {
+        mClient.get(COMMITS + "/" + sha, responseHandler);
+    }
+
     private static String getAbsoluteUrl(String relativeUrl) {
         return BASE_URL + relativeUrl;
     }
