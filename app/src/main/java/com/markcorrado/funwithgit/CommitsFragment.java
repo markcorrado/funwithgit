@@ -2,7 +2,6 @@ package com.markcorrado.funwithgit;
 
 import android.app.Activity;
 import android.app.ListFragment;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,13 +29,14 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends ListFragment {
+public class CommitsFragment extends android.support.v4.app.ListFragment {
+    public static final String TAG = "commits_fragment";
 
     ArrayList<Commit> mCommitArrayList;
     GitRestClient mRestClient;
     private OnFragmentInteractionListener mListener;
 
-    public MainActivityFragment() {
+    public CommitsFragment() {
     }
 
     @Override
@@ -104,50 +104,6 @@ public class MainActivityFragment extends ListFragment {
         });
     }
 
-    private void getFiles(String sha) {
-        mRestClient = GitRestClient.getInstance();
-        mRestClient.setUserAgent("FunWithGit");
-        mRestClient.getFiles(sha, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                ArrayList<CommitFile> commitFileArrayList = new ArrayList<>();
-                try {
-                    GsonBuilder gsonBuilder = new GsonBuilder();
-                    Gson gson = gsonBuilder.create();
-                    if (!response.isNull("files")) {
-                        JSONArray filesJsonArray = response.getJSONArray("files");
-                        commitFileArrayList = gson.fromJson(filesJsonArray.toString(), new TypeToken<List<CommitFile>>() {
-                        }.getType());
-                    }
-                } catch (JSONException e) {
-                    Log.e("TAG", "JSON parsing error: " + e);
-                }
-                showFilesDetail(commitFileArrayList);
-                Toast.makeText(getActivity(), "Success!", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                Toast.makeText(getActivity(), "Error loading git commits!", Toast.LENGTH_LONG).show();
-                System.out.println(errorResponse);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                super.onFailure(statusCode, headers, responseString, throwable);
-                System.out.println(responseString);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                System.out.println(throwable.getLocalizedMessage());
-            }
-        });
-    }
-
     private void setupAdapter() {
         ArrayAdapter<Commit> adapter = new ArrayAdapter<Commit>(getActivity(), android.R.layout.simple_list_item_1, mCommitArrayList);
         setListAdapter(adapter);
@@ -157,7 +113,7 @@ public class MainActivityFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         Commit commit = (Commit) l.getItemAtPosition(position);
-        getFiles(commit.getSha());
+        showFilesDetail(commit.getSha());
     }
 
     @Override
@@ -171,9 +127,9 @@ public class MainActivityFragment extends ListFragment {
         }
     }
 
-    public void showFilesDetail(ArrayList<CommitFile> commitFiles) {
+    public void showFilesDetail(String sha) {
         if (mListener != null) {
-            mListener.showFilesDetail(commitFiles);
+            mListener.showFilesDetail(sha);
         }
     }
 
@@ -194,6 +150,6 @@ public class MainActivityFragment extends ListFragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void showFilesDetail(ArrayList<CommitFile> commitFiles);
+        public void showFilesDetail(String sha);
     }
 }

@@ -24,4 +24,9 @@ public class CommitFile implements Serializable {
 
     private String status;
     private String filename;
+
+    public String toString()
+    {
+        return filename;
+    }
 }
