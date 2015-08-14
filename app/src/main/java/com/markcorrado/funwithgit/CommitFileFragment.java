@@ -51,6 +51,8 @@ public class CommitFileFragment extends ListFragment {
         if (getArguments() != null) {
             mSha = getArguments().getString(SHA_TAG);
         }
+        getActivity().setTitle("Files");
+
         getFiles(mSha);
     }
 
@@ -74,7 +76,6 @@ public class CommitFileFragment extends ListFragment {
                     Log.e("TAG", "JSON parsing error: " + e);
                 }
                 setupAdapter(commitFileArrayList);
-                Toast.makeText(getActivity(), "Success!", Toast.LENGTH_LONG).show();
             }
 
             @Override

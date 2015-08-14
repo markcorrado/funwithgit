@@ -35,6 +35,7 @@ public class CommitsFragment extends android.support.v4.app.ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActivity().setTitle("Commits");
     }
 
     @Override
